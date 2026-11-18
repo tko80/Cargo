@@ -1,0 +1,35 @@
+name: Build Cargo Records IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build unsigned iOS app
+        run: |
+          xcodebuild \
+            -project CargoRecords.xcodeproj \
+            -scheme CargoRecords \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/CargoRecords.app Payload/
+          zip -r CargoRecords.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: CargoRecords-IPA
+          path: CargoRecords.ipa

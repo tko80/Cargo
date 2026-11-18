@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargo Records</title>
+<style>
+:root {
+  --primary: #4361ee;
+  --secondary: #3a0ca3;
+  --accent: #7209b7;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --success: #4cc9f0;
+  --danger: #e63946;
+  --warning: #fca311;
+  --gray: #6c757d;
+  --border: #dee2e6;
+  --item-1: #ff6b6b;
+  --item-2: #4ecdc4;
+  --item-3: #45b7d1;
+  --item-4: #96ceb4;
+  --item-5: #feca57;
+  --item-6: #ff9ff3;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'Noto Sans Myanmar', system-ui, sans-serif;
+}
+
+body {
+  background-color: #f5f7fb;
+  color: var(--dark);
+  line-height: 1.6;
+  padding: 0;
+}
+
+.container {
+  max-width: 100%;
+  padding: 16px;
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  padding: 20px 16px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.date-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.date-display {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.date-picker {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+}
+
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: var(--accent);
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+input, select {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background-color: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+/* Keep typed text readable in all form fields (Names, Categories and Quantity). */
+input:not(.date-picker), select, textarea {
+  color: #212529 !important;
+  -webkit-text-fill-color: #212529;
+  caret-color: #212529;
+  background-color: #ffffff;
+}
+
+input:not(.date-picker)::placeholder,
+textarea::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+input:not(.date-picker):disabled,
+select:disabled,
+textarea:disabled {
+  color: #495057;
+  -webkit-text-fill-color: #495057;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+button {
+  padding: 12px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.btn-success {
+  background-color: var(--success);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.merchant-buttons, .items-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.merchant-btn, .item-btn {
+  background-color: var(--light);
+  color: var(--dark);
+  border: 1px solid var(--border);
+}
+
+.merchant-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Item buttons with different colors */
+.item-btn:nth-child(1) { background-color: var(--item-1); color: white; }
+.item-btn:nth-child(2) { background-color: var(--item-2); color: white; }
+.item-btn:nth-child(3) { background-color: var(--item-3); color: white; }
+.item-btn:nth-child(4) { background-color: var(--item-4); color: var(--dark); }
+.item-btn:nth-child(5) { background-color: var(--item-5); color: var(--dark); }
+.item-btn:nth-child(6) { background-color: var(--item-6); color: white; }
+
+.selected-merchant {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: rgba(67, 97, 238, 0.1);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary);
+  font-weight: 600;
+  color: #e63946; /* red */
+}
+
+.selected-merchant-name {
+  color: #e63946; /* red */
+  font-weight: bold;
+}
+
+.payment-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.payment-status.paid {
+  background-color: rgba(76, 201, 240, 0.1);
+  border-left: 4px solid var(--success);
+  color: var(--success);
+}
+
+.payment-status.unpaid {
+  background-color: rgba(230, 57, 70, 0.1);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
+.item-list {
+  margin-top: 16px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  flex: 2;
+  font-weight: 700; /* Bold for item names */
+  font-size: 1.05rem;
+}
+
+.item-quantity {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.delete-btn {
+  background-color: transparent;
+  color: var(--danger);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Save and payment controls */
+.save-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.save-section .payment-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.payment-list {
+  margin-top: 16px;
+}
+
+.paid-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: rgba(76, 201, 240, 0.1);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--success);
+}
+
+.unpaid-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: rgba(230, 57, 70, 0.1);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--danger);
+}
+
+.records-list {
+  margin-top: 16px;
+}
+
+.record-item {
+  background-color: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.record-details {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.summary-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 8px;
+}
+
+.tab-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  padding: 12px 16px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--gray);
+  font-size: 0.8rem;
+  gap: 4px;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+}
+
+.tab-content {
+  margin-bottom: 70px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Beautiful Popup Styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.popup-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.popup {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: scale(0.7);
+  transition: all 0.3s ease;
+  max-width: 320px;
+  width: 90%;
+  position: relative;
+  overflow: hidden;
+}
+
+.popup-overlay.active .popup {
+  transform: scale(1);
+}
+
+.popup::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.popup-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  display: inline-block;
+  animation: popupIcon 0.5s ease-out;
+}
+
+@keyframes popupIcon {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.popup-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 10px;
+}
+
+.popup-message {
+  color: var(--dark);
+  margin-bottom: 25px;
+  line-height: 1.5;
+  font-size: 1rem;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.popup-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+}
+
+.popup-btn:hover {
+  background: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(67, 97, 238, 0.4);
+}
+
+.popup-btn:active {
+  transform: translateY(0);
+}
+
+.popup-btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.popup-btn-secondary:hover {
+  background: rgba(67, 97, 238, 0.1);
+}
+
+.popup-success .popup-icon { color: var(--success); }
+.popup-success .popup-title { color: var(--success); }
+.popup-success .popup-btn { background: var(--success); box-shadow: 0 4px 8px rgba(76, 201, 240, 0.3); }
+.popup-warning .popup-icon { color: var(--warning); }
+.popup-warning .popup-title { color: var(--warning); }
+.popup-error .popup-icon { color: var(--danger); }
+.popup-error .popup-title { color: var(--danger); }
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .input-group { flex-direction: column; }
+  .save-section { flex-direction: column; }
+  .save-section .payment-buttons { flex-direction: row; width: 100%; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .record-details { grid-template-columns: 1fr; }
+}
+
+/* Delete button style for records */
+.delete-record-btn {
+  background-color: var(--danger);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.delete-record-btn:hover {
+  background-color: #c1121f;
+  transform: translateY(-1px);
+}
+
+/* Real-time update indicator */
+.real-time-update {
+  background-color: rgba(76, 201, 240, 0.1);
+  border-left: 4px solid var(--success);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-time-update.delete {
+  background-color: rgba(230, 57, 70, 0.1);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
+.category-manage-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.category-manage-item { display:flex; align-items:center; gap:5px; padding:5px 7px; background:#f1f3f8; border:1px solid var(--border); border-radius:10px; }
+.category-manage-item span { font-weight:600; padding:0 4px; }
+.category-manage-item button { padding:5px 8px; font-size:.78rem; border-radius:7px; }
+.backup-help { color:var(--gray); margin-bottom:12px; }
+.backup-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+</style>
+</head>
+<body>
+<!-- Popups -->
+<div class="popup-overlay" id="savePopup">
+  <div class="popup popup-success">
+    <div class="popup-icon">✅</div>
+    <div class="popup-title">Saved Successfully!</div>
+    <div class="popup-message"></div>
+    <div class="popup-buttons">
+      <button class="popup-btn" id="closePopupBtn">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="deletePopup">
+  <div class="popup popup-warning">
+    <div class="popup-icon">⚠️</div>
+    <div class="popup-title">Are you sure?</div>
+    <div class="popup-message">Are you sure you want to delete this record?</div>
+    <div class="popup-buttons">
+      <button class="popup-btn popup-btn-secondary" id="cancelDeleteBtn">Cancel</button>
+      <button class="popup-btn" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="errorPopup">
+  <div class="popup popup-error">
+    <div class="popup-icon">❌</div>
+    <div class="popup-title">Something went wrong</div>
+    <div class="popup-message"></div>
+    <div class="popup-buttons">
+      <button class="popup-btn" id="closeErrorPopupBtn">OK</button>
+    </div>
+  </div>
+</div>
+
+<header>
+<h1>Cargo Records</h1>
+<div class="date-section">
+<div class="date-display" id="currentDate">Date: </div>
+<input type="date" id="datePicker" class="date-picker">
+</div>
+</header>
+
+<div class="container">
+<div class="tab-content">
+<!-- Tab 1: Summary -->
+<div class="tab-pane active" id="tab-summary">
+<div class="card">
+<h2>Dashboard</h2>
+<div id="realTimeUpdates">
+  <!-- Real-time updates will appear here -->
+</div>
+<div class="summary-grid" id="summaryGrid">
+<!-- Summary cards will be added here -->
+</div>
+</div>
+
+<div class="card">
+<h2>Payment Status</h2>
+<div class="payment-list" id="paymentList">
+<!-- Payment status will be displayed here -->
+</div>
+</div>
+</div>
+
+<!-- Tab 2: Merchants & Items -->
+<div class="tab-pane" id="tab-merchants">
+<div class="card">
+<h2>Names</h2>
+<div class="input-group">
+<input type="text" id="merchantInput" placeholder="Enter a name...">
+<button id="addMerchantBtn" class="btn-small">＋ Add New</button>
+</div>
+
+<div style="display:flex; gap:8px; align-items:center;">
+  <div class="selected-merchant" id="selectedMerchant" style="flex:1;"></div>
+  <!-- Delete merchant button -->
+  <button id="editMerchantBtn" class="btn-outline btn-small" title="Rename selected name">Rename</button>
+  <button id="deleteMerchantBtn" class="btn-danger btn-small" title="Delete selected name">Delete</button>
+</div>
+
+<div class="payment-status" id="paymentStatus">
+<!-- Payment status will be displayed here -->
+</div>
+<div class="merchant-buttons" id="merchantButtons">
+<!-- Merchant buttons will be added here -->
+</div>
+</div>
+
+<div class="card">
+<h2>Categories / Items</h2>
+<div class="input-group">
+<input type="text" id="newItemInput" placeholder="Enter a new category...">
+<button id="addNewItemBtn" class="btn-small">＋ Add New</button>
+</div>
+<div class="items-buttons" id="itemsButtons">
+<!-- Item buttons will be added here -->
+</div>
+<div class="item-list" id="itemList">
+<!-- Item list will be displayed here -->
+</div>
+
+<!-- Save and payment controls -->
+<div class="save-section">
+  <button class="btn-success" id="saveItemsBtn">
+    <span>💾</span>
+    <span>Save</span>
+  </button>
+  
+  <div class="payment-buttons">
+    <button class="btn-success" id="markPaidBtn">Paid</button>
+    <button class="btn-danger" id="markUnpaidBtn">Unpaid</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Tab 3: Records -->
+<div class="tab-pane" id="tab-records">
+<div class="card">
+<h2>Records</h2>
+<div class="records-list" id="recordsList">
+<!-- Records will be displayed here -->
+</div>
+</div>
+<div class="card">
+<h2>Backup / Restore</h2>
+<p class="backup-help">Export your data to a JSON backup file, or restore a previous backup.</p>
+<div class="backup-actions">
+<button class="btn-success" id="backupBtn">💾 Backup</button>
+<button class="btn-warning" id="restoreBtn">📂 Restore</button>
+<input type="file" id="restoreFileInput" accept=".json,application/json" hidden>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Bottom Tab Navigation -->
+<div class="tab-navigation">
+<button class="tab-btn active" data-tab="tab-summary">
+<span>Dashboard</span>
+</button>
+<button class="tab-btn" data-tab="tab-merchants">
+<span>Names & Items</span>
+</button>
+<button class="tab-btn" data-tab="tab-records">
+<span>Records</span>
+</button>
+</div>
+
+<script>
+// Popup functionality
+const savePopup = document.getElementById('savePopup');
+const deletePopup = document.getElementById('deletePopup');
+const errorPopup = document.getElementById('errorPopup');
+const closePopupBtn = document.getElementById('closePopupBtn');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+const closeErrorPopupBtn = document.getElementById('closeErrorPopupBtn');
+
+function showSuccessPopup(message) {
+  const popupMessage = savePopup.querySelector('.popup-message');
+  popupMessage.textContent = message;
+  savePopup.classList.add('active');
+}
+
+function showDeletePopup(message, callback) {
+  const popupMessage = deletePopup.querySelector('.popup-message');
+  popupMessage.textContent = message;
+  deletePopup.classList.add('active');
+  confirmDeleteBtn.onclick = function() {
+    deletePopup.classList.remove('active');
+    if (callback) callback();
+  };
+}
+
+function showErrorPopup(message) {
+  const popupMessage = errorPopup.querySelector('.popup-message');
+  popupMessage.textContent = message;
+  errorPopup.classList.add('active');
+}
+
+closePopupBtn.addEventListener('click', function() {
+  savePopup.classList.remove('active');
+});
+cancelDeleteBtn.addEventListener('click', function() {
+  deletePopup.classList.remove('active');
+});
+closeErrorPopupBtn.addEventListener('click', function() {
+  errorPopup.classList.remove('active');
+});
+[savePopup, deletePopup, errorPopup].forEach(popup => {
+  popup.addEventListener('click', function(e) {
+    if (e.target === popup) {
+      popup.classList.remove('active');
+    }
+  });
+});
+
+// Tab Navigation
+document.querySelectorAll('.tab-btn').forEach(button => {
+button.addEventListener('click', function() {
+document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+this.classList.add('active');
+const tabId = this.getAttribute('data-tab');
+document.getElementById(tabId).classList.add('active');
+});
+});
+
+// Current date display
+const currentDateElement = document.getElementById('currentDate');
+const datePickerElement = document.getElementById('datePicker');
+const today = new Date();
+const formattedDate = today.toLocaleDateString('en-GB', {
+year: 'numeric',
+month: 'long',
+day: 'numeric'
+});
+currentDateElement.textContent = `Date: ${formattedDate}`;
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+datePickerElement.value = `${yyyy}-${mm}-${dd}`;
+datePickerElement.addEventListener('change', function() {
+const selectedDate = new Date(this.value);
+const formattedSelectedDate = selectedDate.toLocaleDateString('en-GB', {
+year: 'numeric',
+month: 'long',
+day: 'numeric'
+});
+currentDateElement.textContent = `Date: ${formattedSelectedDate}`;
+loadAllDataForDate(this.value);
+});
+
+// Merchant management
+const merchantInput = document.getElementById('merchantInput');
+const addMerchantBtn = document.getElementById('addMerchantBtn');
+const merchantButtons = document.getElementById('merchantButtons');
+const selectedMerchantElement = document.getElementById('selectedMerchant');
+const paymentStatusElement = document.getElementById('paymentStatus');
+const deleteMerchantBtn = document.getElementById('deleteMerchantBtn');
+const editMerchantBtn = document.getElementById('editMerchantBtn');
+
+let merchants = JSON.parse(localStorage.getItem('merchants')) || [];
+let selectedMerchant = null;
+
+// Render merchant buttons
+function renderMerchantButtons() {
+merchantButtons.innerHTML = '';
+merchants.forEach(merchant => {
+const button = document.createElement('button');
+button.textContent = merchant;
+button.className = 'merchant-btn btn-small';
+if (merchant === selectedMerchant) {
+button.classList.add('active');
+}
+button.addEventListener('click', function() {
+selectMerchant(merchant);
+});
+merchantButtons.appendChild(button);
+});
+}
+
+// Select merchant
+function selectMerchant(merchantName) {
+selectedMerchant = merchantName;
+selectedMerchantElement.innerHTML = ` <span class="selected-merchant-name">${merchantName}</span>`;
+renderMerchantButtons();
+loadItemsForMerchant(merchantName);
+updatePaymentStatus();
+}
+
+// Update payment status display
+function updatePaymentStatus() {
+if (!selectedMerchant) {
+paymentStatusElement.innerHTML = '';
+return;
+}
+const currentDate = datePickerElement.value;
+const isPaid = paidMerchants[currentDate] && paidMerchants[currentDate].includes(selectedMerchant);
+if (isPaid) {
+paymentStatusElement.innerHTML = `
+<div class="payment-status paid">
+<span>✅</span>
+<span>Paid</span>
+</div>
+`;
+} else {
+paymentStatusElement.innerHTML = `
+<div class="payment-status unpaid">
+<span>❌</span>
+<span>Unpaid</span>
+</div>
+`;
+}
+}
+
+// Add new merchant
+addMerchantBtn.addEventListener('click', function() {
+const merchantName = merchantInput.value.trim();
+if (merchantName && !merchants.includes(merchantName)) {
+merchants.push(merchantName);
+localStorage.setItem('merchants', JSON.stringify(merchants));
+renderMerchantButtons();
+merchantInput.value = '';
+selectMerchant(merchantName);
+// Show real-time update
+showRealTimeUpdate(`"${merchantName}" was added.`);
+}
+});
+
+// Rename selected name and update all linked data
+editMerchantBtn.addEventListener('click', function() {
+  if (!selectedMerchant) {
+    showErrorPopup('Please select a name to rename.');
+    return;
+  }
+  const oldName = selectedMerchant;
+  const newName = prompt('Enter the new name:', oldName);
+  if (newName === null) return;
+  const cleanName = newName.trim();
+  if (!cleanName || (cleanName !== oldName && merchants.includes(cleanName))) {
+    showErrorPopup('Please enter a unique, non-empty name.');
+    return;
+  }
+  merchants = merchants.map(name => name === oldName ? cleanName : name);
+  Object.keys(merchantItems).forEach(date => {
+    if (merchantItems[date] && merchantItems[date][oldName]) {
+      merchantItems[date][cleanName] = merchantItems[date][oldName];
+      delete merchantItems[date][oldName];
+    }
+  });
+  Object.keys(records).forEach(date => {
+    (records[date] || []).forEach(record => {
+      if (record.merchant === oldName) record.merchant = cleanName;
+    });
+  });
+  Object.keys(paidMerchants).forEach(date => {
+    paidMerchants[date] = (paidMerchants[date] || []).map(name => name === oldName ? cleanName : name);
+  });
+  selectedMerchant = cleanName;
+  localStorage.setItem('merchants', JSON.stringify(merchants));
+  localStorage.setItem('merchantItems', JSON.stringify(merchantItems));
+  localStorage.setItem('records', JSON.stringify(records));
+  localStorage.setItem('paidMerchants', JSON.stringify(paidMerchants));
+  selectedMerchantElement.textContent = cleanName;
+  renderMerchantButtons();
+  loadAllDataForDate(datePickerElement.value);
+  showRealTimeUpdate(`Name changed to "${cleanName}".`);
+});
+
+// Delete merchant (and all its data across dates)
+deleteMerchantBtn.addEventListener('click', function() {
+if (!selectedMerchant) {
+showErrorPopup('Please select a name to delete.');
+return;
+}
+showDeletePopup(`Delete "${selectedMerchant}" and all related records? This cannot be undone.`, function() {
+  const merchantName = selectedMerchant;
+  // Remove merchant from merchants list
+  merchants = merchants.filter(m => m !== selectedMerchant);
+  localStorage.setItem('merchants', JSON.stringify(merchants));
+
+  // Remove merchant data across merchantItems, records, paidMerchants
+  // merchantItems: structure { date: { merchant: [items...] } }
+  Object.keys(merchantItems).forEach(date => {
+    if (merchantItems[date] && merchantItems[date][selectedMerchant]) {
+      delete merchantItems[date][selectedMerchant];
+      if (Object.keys(merchantItems[date]).length === 0) delete merchantItems[date];
+    }
+  });
+
+  // records: structure { date: [ {merchant, items, paid, ...}, ... ] }
+  Object.keys(records).forEach(date => {
+    if (Array.isArray(records[date])) {
+      records[date] = records[date].filter(r => r.merchant !== selectedMerchant);
+      if (records[date].length === 0) delete records[date];
+    }
+  });
+
+  // paidMerchants: structure { date: [merchant, ...] }
+  Object.keys(paidMerchants).forEach(date => {
+    if (Array.isArray(paidMerchants[date])) {
+      paidMerchants[date] = paidMerchants[date].filter(m => m !== selectedMerchant);
+      if (paidMerchants[date].length === 0) delete paidMerchants[date];
+    }
+  });
+
+  // Save to localStorage
+  localStorage.setItem('merchantItems', JSON.stringify(merchantItems));
+  localStorage.setItem('records', JSON.stringify(records));
+  localStorage.setItem('paidMerchants', JSON.stringify(paidMerchants));
+
+  // Reset selection and UI
+  selectedMerchant = null;
+  selectedMerchantElement.innerHTML = '';
+  renderMerchantButtons();
+  loadAllDataForDate(datePickerElement.value);
+  updateSummary();
+
+  // Show real-time update
+  showRealTimeUpdate(`"${merchantName}" was deleted.`, true);
+});
+});
+
+// Items management
+const itemsButtons = document.getElementById('itemsButtons');
+const itemList = document.getElementById('itemList');
+const newItemInput = document.getElementById('newItemInput');
+const addNewItemBtn = document.getElementById('addNewItemBtn');
+const categoryManageList = document.getElementById('categoryManageList');
+const saveItemsBtn = document.getElementById('saveItemsBtn');
+
+let allItems = JSON.parse(localStorage.getItem('allItems')) || [];
+let merchantItems = JSON.parse(localStorage.getItem('merchantItems')) || {};
+let paidMerchants = JSON.parse(localStorage.getItem('paidMerchants')) || {};
+let records = JSON.parse(localStorage.getItem('records')) || {}; // structure date -> array of records
+
+function renderItemButtons() {
+itemsButtons.innerHTML = '';
+allItems.forEach(item => {
+const button = document.createElement('button');
+button.textContent = item;
+button.className = 'item-btn btn-small';
+button.addEventListener('click', function() {
+addItemToList(item);
+});
+itemsButtons.appendChild(button);
+});
+renderCategoryManagement();
+}
+
+function renderCategoryManagement() {
+  if (!categoryManageList) return;
+  categoryManageList.innerHTML = '';
+  allItems.forEach((category, index) => {
+    const row = document.createElement('div');
+    row.className = 'category-manage-item';
+    const label = document.createElement('span');
+    label.textContent = category;
+    const rename = document.createElement('button');
+    rename.className = 'btn-outline';
+    rename.textContent = 'Rename';
+    rename.addEventListener('click', () => {
+      const next = prompt('Rename category:', category);
+      if (next === null) return;
+      const clean = next.trim();
+      if (!clean || (clean !== category && allItems.includes(clean))) {
+        showErrorPopup('Please enter a unique, non-empty category.');
+        return;
+      }
+      allItems[index] = clean;
+      localStorage.setItem('allItems', JSON.stringify(allItems));
+      // Update saved item names without changing quantities
+      Object.keys(merchantItems).forEach(date => {
+        Object.values(merchantItems[date] || {}).forEach(items => {
+          (items || []).forEach(item => { if (item.name === category) item.name = clean; });
+        });
+      });
+      Object.keys(records).forEach(date => (records[date] || []).forEach(record => {
+        (record.items || []).forEach(item => { if (item.name === category) item.name = clean; });
+      }));
+      localStorage.setItem('merchantItems', JSON.stringify(merchantItems));
+      localStorage.setItem('records', JSON.stringify(records));
+      renderItemButtons();
+      loadAllDataForDate(datePickerElement.value);
+    });
+    const remove = document.createElement('button');
+    remove.className = 'btn-danger';
+    remove.textContent = 'Delete';
+    remove.addEventListener('click', () => {
+      if (!confirm(`Remove category "${category}" from the category list? Existing saved records will be kept.`)) return;
+      allItems = allItems.filter(item => item !== category);
+      localStorage.setItem('allItems', JSON.stringify(allItems));
+      renderItemButtons();
+    });
+    row.append(label, rename, remove);
+    categoryManageList.appendChild(row);
+  });
+}
+
+addNewItemBtn.addEventListener('click', function() {
+const newItem = newItemInput.value.trim();
+if (newItem && !allItems.includes(newItem)) {
+allItems.push(newItem);
+localStorage.setItem('allItems', JSON.stringify(allItems));
+renderItemButtons();
+newItemInput.value = '';
+// Show real-time update
+showRealTimeUpdate(`"${newItem}" category was added.`);
+}
+});
+
+// Add item to list — quantity left blank by default
+function addItemToList(itemName) {
+if (!selectedMerchant) {
+showErrorPopup('Please select a name first.');
+return;
+}
+
+const itemRow = document.createElement('div');
+itemRow.className = 'item-row';
+itemRow.dataset.item = itemName;
+
+const itemNameDiv = document.createElement('div');
+itemNameDiv.className = 'item-name';
+itemNameDiv.textContent = itemName;
+
+const quantityInput = document.createElement('input');
+quantityInput.type = 'number';
+quantityInput.min = '0';
+quantityInput.value = ''; // BLANK as requested
+quantityInput.className = 'item-quantity';
+quantityInput.placeholder = 'Quantity';
+
+const deleteBtn = document.createElement('button');
+deleteBtn.textContent = '×';
+deleteBtn.className = 'delete-btn';
+deleteBtn.title = 'Remove';
+deleteBtn.addEventListener('click', function() {
+itemRow.remove();
+// Show real-time update
+showRealTimeUpdate(`"${itemName}" was removed from this entry.`, true);
+});
+
+itemRow.appendChild(itemNameDiv);
+itemRow.appendChild(quantityInput);
+itemRow.appendChild(deleteBtn);
+itemList.appendChild(itemRow);
+}
+
+// Save items button — only save when this button is clicked
+saveItemsBtn.addEventListener('click', function() {
+if (!selectedMerchant) {
+showErrorPopup('Please select a name first.');
+return;
+}
+saveItemsForMerchant();
+updateSummary();
+showSuccessPopup('Items saved successfully.');
+// Show real-time update
+showRealTimeUpdate(`Items saved successfully.`);
+});
+
+// Save items for current merchant (also updates records)
+function saveItemsForMerchant() {
+if (!selectedMerchant) return;
+const items = getItemsFromList();
+const currentDate = datePickerElement.value;
+
+// Save to merchantItems
+if (!merchantItems[currentDate]) merchantItems[currentDate] = {};
+merchantItems[currentDate][selectedMerchant] = items;
+localStorage.setItem('merchantItems', JSON.stringify(merchantItems));
+
+// Save to records (update or add)
+if (!records[currentDate]) records[currentDate] = [];
+const existingRecordIndex = records[currentDate].findIndex(r => r.merchant === selectedMerchant);
+const isPaid = paidMerchants[currentDate] && paidMerchants[currentDate].includes(selectedMerchant);
+
+const newRecord = {
+merchant: selectedMerchant,
+items: items,
+paid: !!isPaid,
+timestamp: new Date().toISOString()
+};
+
+if (existingRecordIndex !== -1) {
+records[currentDate][existingRecordIndex] = newRecord;
+} else {
+records[currentDate].push(newRecord);
+}
+localStorage.setItem('records', JSON.stringify(records));
+
+// Refresh UI
+loadRecordsForDate(currentDate);
+renderPaymentList();
+updatePaymentStatus();
+}
+
+// Load items for merchant
+function loadItemsForMerchant(merchantName) {
+itemList.innerHTML = '';
+const currentDate = datePickerElement.value;
+if (!merchantItems[currentDate] || !merchantItems[currentDate][merchantName]) {
+return;
+}
+const items = merchantItems[currentDate][merchantName];
+items.forEach(item => {
+const itemRow = document.createElement('div');
+itemRow.className = 'item-row';
+itemRow.dataset.item = item.name;
+
+const itemNameDiv = document.createElement('div');
+itemNameDiv.className = 'item-name';
+itemNameDiv.textContent = item.name;
+
+const quantityInput = document.createElement('input');
+quantityInput.type = 'number';
+quantityInput.min = '0';
+quantityInput.value = item.quantity;
+quantityInput.className = 'item-quantity';
+quantityInput.placeholder = 'Quantity';
+
+const deleteBtn = document.createElement('button');
+deleteBtn.textContent = '×';
+deleteBtn.className = 'delete-btn';
+deleteBtn.title = 'Remove';
+deleteBtn.addEventListener('click', function() {
+itemRow.remove();
+// Show real-time update
+showRealTimeUpdate(`"${item.name}" was removed from this entry.`, true);
+});
+
+itemRow.appendChild(itemNameDiv);
+itemRow.appendChild(quantityInput);
+itemRow.appendChild(deleteBtn);
+itemList.appendChild(itemRow);
+});
+}
+
+// Get items from list
+function getItemsFromList() {
+const items = [];
+document.querySelectorAll('.item-row').forEach(row => {
+const name = row.querySelector('.item-name').textContent;
+const quantity = row.querySelector('.item-quantity').value;
+items.push({ name, quantity });
+});
+return items;
+}
+
+// Payment status buttons
+const markPaidBtn = document.getElementById('markPaidBtn');
+const markUnpaidBtn = document.getElementById('markUnpaidBtn');
+
+// Record payment status update function
+function updateRecordPaymentStatus(date, merchantName, isPaid) {
+
+  if (!records[date]) return;
+
+  records[date].forEach(record => {
+
+    if (record.merchant === merchantName) {
+      record.paid = isPaid;
+      record.timestamp = new Date().toISOString();
+    }
+
+  });
+
+  localStorage.setItem('records', JSON.stringify(records));
+
+  // Records tab refresh
+  loadRecordsForDate(date);
+}
+
+// Mark as paid
+markPaidBtn.addEventListener('click', function () {
+
+  if (!selectedMerchant) {
+    showErrorPopup('Please select a name first.');
+    return;
+  }
+
+  const currentDate = datePickerElement.value;
+
+  // Create array if not exist
+  if (!paidMerchants[currentDate]) {
+    paidMerchants[currentDate] = [];
+  }
+
+  // Add paid merchant
+  if (!paidMerchants[currentDate].includes(selectedMerchant)) {
+
+    paidMerchants[currentDate].push(selectedMerchant);
+
+    // Save paid merchants
+    localStorage.setItem(
+      'paidMerchants',
+      JSON.stringify(paidMerchants)
+    );
+
+    // Update records
+    updateRecordPaymentStatus(
+      currentDate,
+      selectedMerchant,
+      true
+    );
+
+    // Refresh UI
+    updatePaymentStatus();
+    renderPaymentList();
+    updateSummary();
+
+    // Success popup
+    showSuccessPopup(
+      `"${selectedMerchant}" marked as paid.`
+    );
+
+    // Realtime update
+    showRealTimeUpdate(
+      `"${selectedMerchant}" payment status changed to paid.`
+    );
+  }
+});
+
+// Mark as unpaid
+markUnpaidBtn.addEventListener('click', function () {
+
+  if (!selectedMerchant) {
+    showErrorPopup('Please select a name first.');
+    return;
+  }
+
+  const currentDate = datePickerElement.value;
+
+  // Check merchant exists in paid list
+  if (
+    paidMerchants[currentDate] &&
+    paidMerchants[currentDate].includes(selectedMerchant)
+  ) {
+
+    // Remove merchant
+    paidMerchants[currentDate] =
+      paidMerchants[currentDate].filter(
+        merchant => merchant !== selectedMerchant
+      );
+
+    // Remove empty array
+    if (paidMerchants[currentDate].length === 0) {
+      delete paidMerchants[currentDate];
+    }
+
+    // Save
+    localStorage.setItem(
+      'paidMerchants',
+      JSON.stringify(paidMerchants)
+    );
+
+    // Update records
+    updateRecordPaymentStatus(
+      currentDate,
+      selectedMerchant,
+      false
+    );
+
+    // Refresh UI
+    updatePaymentStatus();
+    renderPaymentList();
+    updateSummary();
+
+    // Success popup
+    showSuccessPopup(
+      `"${selectedMerchant}" marked as unpaid.`
+    );
+
+    // Realtime update
+    showRealTimeUpdate(
+      `"${selectedMerchant}" payment status changed to unpaid.`
+    );
+  }
+});
+
+// Render payment list
+function renderPaymentList() {
+const paymentListElement = document.getElementById('paymentList');
+const currentDate = datePickerElement.value;
+paymentListElement.innerHTML = '';
+
+if (!merchantItems[currentDate] || Object.keys(merchantItems[currentDate]).length === 0) {
+paymentListElement.innerHTML = '<div class="empty-message">No records for this date.</div>';
+return;
+}
+
+Object.keys(merchantItems[currentDate]).forEach(merchant => {
+const isPaid = paidMerchants[currentDate] && paidMerchants[currentDate].includes(merchant);
+const paymentItem = document.createElement('div');
+paymentItem.className = isPaid ? 'paid-item' : 'unpaid-item';
+paymentItem.innerHTML = `
+<div>${merchant}</div>
+<div>${isPaid ? '✅ Paid' : '❌ Unpaid'}</div>
+`;
+paymentListElement.appendChild(paymentItem);
+});
+}
+
+// Load all data for a specific date
+function loadAllDataForDate(date) {
+loadItemsForMerchant(selectedMerchant);
+renderPaymentList();
+loadRecordsForDate(date);
+updateSummary();
+updatePaymentStatus();
+}
+
+// Load records for a specific date
+function loadRecordsForDate(date) {
+
+  const recordsListElement =
+    document.getElementById('recordsList');
+
+  recordsListElement.innerHTML = '';
+
+  // No records
+  if (!records[date] || records[date].length === 0) {
+
+    recordsListElement.innerHTML = `
+      <div class="empty-message">
+        No records for this date.
+      </div>
+    `;
+
+    return;
+  }
+
+  // Render records
+  records[date].forEach((record, index) => {
+
+    const recordElement = document.createElement('div');
+
+    recordElement.className = 'record-item';
+
+    // Time
+    const time = new Date(
+      record.timestamp
+    ).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // HTML
+    recordElement.innerHTML = `
+
+      <div class="record-header">
+
+        <div>${record.merchant}</div>
+
+        <div>${time}</div>
+
+      </div>
+
+      <div class="record-details">
+
+        <div>
+          ${record.items
+            .map(item =>
+              `${item.name} (${item.quantity})`
+            )
+            .join(', ')}
+        </div>
+
+        <div>
+          ${record.paid
+            ? '✅ Paid'
+            : '❌ Unpaid'}
+        </div>
+
+      </div>
+
+      <button
+        class="delete-record-btn"
+        data-date="${date}"
+        data-index="${index}"
+      >
+        Delete Record
+      </button>
+
+    `;
+
+    recordsListElement.appendChild(recordElement);
+
+  });
+
+  // Delete button events
+  document
+    .querySelectorAll('.delete-record-btn')
+    .forEach(btn => {
+
+      btn.addEventListener('click', function () {
+
+        const date =
+          this.getAttribute('data-date');
+
+        const index =
+          parseInt(
+            this.getAttribute('data-index')
+          );
+
+        // Merchant name
+        const merchantName =
+          records[date][index].merchant;
+
+        // Popup
+        showDeletePopup(
+          'Are you sure you want to delete this record?',
+          function () {
+
+            // Delete record
+            records[date].splice(index, 1);
+
+            // Remove empty records
+            if (records[date].length === 0) {
+              delete records[date];
+            }
+
+            // Delete merchant items
+            if (
+              merchantItems[date] &&
+              merchantItems[date][merchantName]
+            ) {
+
+              delete merchantItems[date][merchantName];
+
+              // Remove empty date
+              if (
+                Object.keys(
+                  merchantItems[date]
+                ).length === 0
+              ) {
+
+                delete merchantItems[date];
+
+              }
+            }
+
+            // Delete paid merchant
+            if (
+              paidMerchants[date] &&
+              paidMerchants[date].includes(
+                merchantName
+              )
+            ) {
+
+              paidMerchants[date] =
+                paidMerchants[date].filter(
+                  merchant =>
+                    merchant !== merchantName
+                );
+
+              // Remove empty paid list
+              if (
+                paidMerchants[date].length === 0
+              ) {
+
+                delete paidMerchants[date];
+
+              }
+            }
+
+            // Save records
+            localStorage.setItem(
+              'records',
+              JSON.stringify(records)
+            );
+
+            // Save merchant items
+            localStorage.setItem(
+              'merchantItems',
+              JSON.stringify(merchantItems)
+            );
+
+            // Save paid merchants
+            localStorage.setItem(
+              'paidMerchants',
+              JSON.stringify(paidMerchants)
+            );
+
+            // Refresh UI
+            loadRecordsForDate(date);
+
+            renderPaymentList();
+
+            updateSummary();
+
+            updatePaymentStatus();
+
+            // Real-time update
+            showRealTimeUpdate(
+              `Record for "${merchantName}" was deleted.`,
+              true
+            );
+
+          }
+        );
+
+      });
+
+    });
+
+}
+// Update summary
+function updateSummary() {
+  const currentDate = datePickerElement.value;
+  const summaryGrid = document.getElementById('summaryGrid');
+  summaryGrid.innerHTML = '';
+
+  if (!merchantItems[currentDate] || Object.keys(merchantItems[currentDate]).length === 0) {
+    summaryGrid.innerHTML = '<div class="empty-message">No records for this date.</div>';
+    return;
+  }
+
+  const totalMerchants = Object.keys(merchantItems[currentDate]).length;
+  const paidCount = paidMerchants[currentDate] ? paidMerchants[currentDate].length : 0;
+  const unpaidCount = totalMerchants - paidCount;
+
+  // Calculate total item quantity
+  let totalItemsQuantity = 0;
+  Object.values(merchantItems[currentDate]).forEach(items => {
+    items.forEach(item => {
+      totalItemsQuantity += parseInt(item.quantity) || 0;
+    });
+  });
+
+  summaryGrid.innerHTML = `
+  <div class="summary-card">
+    <div>Names</div>
+    <div class="summary-value">${totalMerchants}</div>
+  </div>
+  <div class="summary-card">
+    <div>Paid</div>
+    <div class="summary-value" style="color: var(--success);">${paidCount}</div>
+  </div>
+  <div class="summary-card">
+    <div>Unpaid</div>
+    <div class="summary-value" style="color: var(--danger);">${unpaidCount}</div>
+  </div>
+  <div class="summary-card">
+    <div>Total Quantity</div>
+    <div class="summary-value">${totalItemsQuantity}</div>
+  </div>
+  `;
+}
+
+
+// Real-time update function
+function showRealTimeUpdate(message, isDelete = false) {
+const updatesContainer = document.getElementById('realTimeUpdates');
+const updateElement = document.createElement('div');
+updateElement.className = `real-time-update ${isDelete ? 'delete' : ''}`;
+updateElement.innerHTML = `
+<span>${isDelete ? '🗑️' : '🔄'}</span>
+<span>${message}</span>
+`;
+updatesContainer.appendChild(updateElement);
+  
+// Auto remove after 5 seconds
+setTimeout(() => {
+if (updateElement.parentNode) {
+updateElement.remove();
+}
+}, 5000);
+}
+
+// Backup / Restore
+document.getElementById('backupBtn').addEventListener('click', function() {
+  const backupData = {};
+  ['merchants', 'allItems', 'merchantItems', 'paidMerchants', 'records'].forEach(key => {
+    backupData[key] = JSON.parse(localStorage.getItem(key) || (key === 'merchants' || key === 'allItems' ? '[]' : '{}'));
+  });
+  backupData.app = 'Cargo Records';
+  backupData.backupDate = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `cargo-records-backup-${datePickerElement.value}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showSuccessPopup('Backup file exported successfully.');
+});
+document.getElementById('restoreBtn').addEventListener('click', () => document.getElementById('restoreFileInput').click());
+document.getElementById('restoreFileInput').addEventListener('change', function() {
+  const file = this.files && this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      const required = ['merchants', 'allItems', 'merchantItems', 'paidMerchants', 'records'];
+      if (!data || !required.every(key => Object.prototype.hasOwnProperty.call(data, key))) {
+        throw new Error('This is not a valid Cargo Records backup.');
+      }
+      if (!confirm('Restore this backup? Current app data will be replaced.')) return;
+      required.forEach(key => localStorage.setItem(key, JSON.stringify(data[key])));
+      merchants = data.merchants || [];
+      allItems = data.allItems || [];
+      merchantItems = data.merchantItems || {};
+      paidMerchants = data.paidMerchants || {};
+      records = data.records || {};
+      selectedMerchant = null;
+      selectedMerchantElement.textContent = '';
+      renderMerchantButtons();
+      renderItemButtons();
+      loadAllDataForDate(datePickerElement.value);
+      showSuccessPopup('Backup restored successfully.');
+    } catch (error) {
+      showErrorPopup(error.message || 'Unable to restore backup.');
+    } finally {
+      this.value = '';
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Initialize
+renderMerchantButtons();
+renderItemButtons();
+loadAllDataForDate(datePickerElement.value);
+
+// Button click sound functionality
+(function(){
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let ctx = null;
+
+  function ensureCtx() {
+    if (!ctx && AudioCtx) {
+      try {
+        ctx = new AudioCtx();
+      } catch (e) {
+        ctx = null;
+      }
+    }
+  }
+
+  function playClickSound() {
+    if (!AudioCtx) return;
+    ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // first short tone
+    const o1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(1200, now);
+    g1.gain.setValueAtTime(0, now);
+    g1.gain.linearRampToValueAtTime(0.18, now + 0.001);
+    g1.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    o1.connect(g1).connect(ctx.destination);
+    o1.start(now);
+    o1.stop(now + 0.09);
+
+    // second short tone slightly later
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(900, now + 0.09);
+    g2.gain.setValueAtTime(0, now + 0.09);
+    g2.gain.linearRampToValueAtTime(0.16, now + 0.091);
+    g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    o2.connect(g2).connect(ctx.destination);
+    o2.start(now + 0.09);
+    o2.stop(now + 0.18);
+  }
+
+  // Catch clicks on any <button> (including dynamically created ones)
+  document.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('button')) {
+      // resume if suspended (required on some browsers)
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().then(playClickSound).catch(playClickSound);
+      } else {
+        playClickSound();
+      }
+    }
+  }, true);
+})();
+</script>
+</body>
+</html>
