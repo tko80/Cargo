@@ -1,35 +1,66 @@
+
 name: Build Cargo Records IPA
 
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: macos-latest
+    timeout-minutes: 45
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build iOS App
+      - name: Check Xcode project
         run: |
-          xcodebuild \
+          ls -la
+          test -d CargoRecords.xcodeproj
+          xcodebuild -list -project CargoRecords.xcodeproj
+
+      - name: Build iOS Archive
+        run: |
+          xcodebuild archive \
             -project CargoRecords.xcodeproj \
             -scheme CargoRecords \
             -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO
+            -archivePath "$PWD/build/CargoRecords.xcarchive" \
+            -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Verify App Executable
+        run: |
+          APP="build/CargoRecords.xcarchive/Products/Applications/CargoRecords.app"
+
+          test -d "$APP"
+          test -f "$APP/Info.plist"
+
+          EXEC=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleExecutable" "$APP/Info.plist")
+
+          echo "Executable: $EXEC"
+          test -n "$EXEC"
+          test -f "$APP/$EXEC"
 
       - name: Package IPA
         run: |
           mkdir -p Payload
-          cp -R build/Build/Products/Release-iphoneos/CargoRecords.app Payload/
-          zip -r CargoRecords.ipa Payload
+          cp -R \
+            build/CargoRecords.xcarchive/Products/Applications/CargoRecords.app \
+            Payload/
+
+          zip -qry CargoRecords.ipa Payload
+
+          unzip -l CargoRecords.ipa
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: CargoRecords-IPA
           path: CargoRecords.ipa
+          if-no-files-found: error
