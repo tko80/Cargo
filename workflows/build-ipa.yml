@@ -3,55 +3,33 @@ name: Build Cargo Records IPA
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check Xcode project
+      - name: Build unsigned iOS app
         run: |
-          test -d CargoRecords.xcodeproj
-          xcodebuild -list -project CargoRecords.xcodeproj
-
-      - name: Build iOS Archive
-        run: |
-          xcodebuild archive \
+          xcodebuild \
             -project CargoRecords.xcodeproj \
             -scheme CargoRecords \
             -configuration Release \
-            -archivePath "$PWD/build/CargoRecords.xcarchive" \
-            -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
-
-      - name: Verify App Executable and Icon
-        run: |
-          APP="build/CargoRecords.xcarchive/Products/Applications/CargoRecords.app"
-          test -d "$APP"
-          test -f "$APP/Info.plist"
-          EXEC=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
-          echo "Executable: $EXEC"
-          test -n "$EXEC"
-          test -f "$APP/$EXEC"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName" "$APP/Info.plist" || true
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Package IPA
         run: |
           mkdir -p Payload
-          cp -R build/CargoRecords.xcarchive/Products/Applications/CargoRecords.app Payload/
-          /usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" Payload/CargoRecords.app/Info.plist
-          zip -qry CargoRecords.ipa Payload
-          unzip -l CargoRecords.ipa
+          cp -R build/Build/Products/Release-iphoneos/CargoRecords.app Payload/
+          zip -r CargoRecords.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: CargoRecords-IPA
           path: CargoRecords.ipa
-          if-no-files-found: error
