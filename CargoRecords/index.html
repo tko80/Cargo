@@ -774,6 +774,67 @@ input, select, textarea, button { max-width:100%; }
   html, body { height:100dvh; }
 }
 
+
+/* Debt controls visibility and touch-safe layout */
+#tab-debts { padding-bottom: 120px !important; }
+#tab-debts .debt-form-grid { display:grid !important; }
+#tab-debts .save-section { display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:10px !important; width:100% !important; }
+#tab-debts .save-section button { display:flex !important; visibility:visible !important; opacity:1 !important; width:100% !important; min-height:50px !important; flex:0 0 auto !important; position:relative !important; z-index:5 !important; }
+#tab-debts .debt-actions { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:9px !important; width:100% !important; margin-top:12px !important; }
+#tab-debts .debt-actions button { display:flex !important; visibility:visible !important; opacity:1 !important; min-height:46px !important; width:100% !important; max-width:none !important; }
+.tab-navigation { position:fixed !important; display:flex !important; visibility:visible !important; opacity:1 !important; z-index:2147483000 !important; bottom:0 !important; left:0 !important; right:0 !important; min-height:68px !important; padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important; }
+.tab-navigation .tab-btn { display:flex !important; visibility:visible !important; opacity:1 !important; flex:1 1 0 !important; min-width:0 !important; color:#33476d !important; }
+.tab-navigation .tab-btn.active { color:#2458d8 !important; }
+#debtPaymentModal { display:none; position:fixed; inset:0; z-index:2147483647; background:rgba(10,20,40,.62); padding:18px; align-items:center; justify-content:center; }
+#debtPaymentModal.active { display:flex !important; }
+#debtPaymentModal .payment-dialog { width:100%; max-width:420px; max-height:90vh; overflow:auto; background:#fff; border-radius:20px; padding:20px; box-shadow:0 18px 50px rgba(0,0,0,.25); }
+#debtPaymentModal .payment-dialog h3 { margin:0 0 12px; color:#17366e; }
+#debtPaymentModal label { display:block; margin:10px 0 5px; font-size:.82rem; font-weight:700; color:#43516a; }
+#debtPaymentModal input, #debtPaymentModal textarea { width:100%; min-height:46px; color:#17213a !important; background:#fff !important; }
+#debtPaymentModal .payment-modal-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+#debtPaymentModal button { min-height:48px; }
+
+
+/* iOS WKWebView fix: keep the page in normal document flow so the fixed
+   bottom navigation is not clipped by a fixed, overflow-hidden BODY. */
+html, body {
+  width:100% !important; max-width:100% !important;
+  height:auto !important; min-height:100% !important;
+  overflow-x:hidden !important; overflow-y:auto !important;
+  overscroll-behavior-x:none !important;
+}
+body {
+  position:static !important; inset:auto !important;
+  display:block !important; min-width:0 !important;
+  touch-action:pan-y !important;
+  padding-bottom:calc(100px + env(safe-area-inset-bottom)) !important;
+}
+header { width:100% !important; }
+.container {
+  display:block !important; width:100% !important; max-width:760px !important;
+  min-height:0 !important; height:auto !important; overflow:visible !important;
+  padding-bottom:calc(110px + env(safe-area-inset-bottom)) !important;
+}
+.tab-content { overflow:visible !important; margin-bottom:0 !important; }
+.tab-navigation {
+  position:fixed !important; display:flex !important;
+  left:0 !important; right:0 !important; bottom:0 !important;
+  width:100% !important; min-height:70px !important;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) !important;
+  background:rgba(255,255,255,.98) !important;
+  border-top:1px solid #dce4f1 !important;
+  box-shadow:0 -5px 20px rgba(20,40,80,.14) !important;
+  z-index:2147483647 !important; visibility:visible !important; opacity:1 !important;
+}
+.tab-navigation .tab-btn {
+  display:flex !important; visibility:visible !important; opacity:1 !important;
+  flex:1 1 0 !important; min-width:0 !important; min-height:52px !important;
+  color:#33476d !important; background:transparent !important;
+  box-shadow:none !important; font-size:.72rem !important;
+}
+.tab-navigation .tab-btn.active { color:#2458d8 !important; background:#edf3ff !important; }
+#tab-debts { padding-bottom:24px !important; }
+
 </style>
 </head>
 <body>
@@ -936,7 +997,7 @@ input, select, textarea, button { max-width:100%; }
         <div class="debt-field full"><label for="debtNote">Note (optional)</label><textarea id="debtNote" placeholder="Details, phone, reason..."></textarea></div>
       </div>
       <div class="save-section" style="display:flex;flex-direction:row;align-items:center">
-        <button class="btn-success" type="submit" id="debtSaveBtn">＋ Save Debt</button>
+        <button class="btn-success" type="button" id="debtSaveBtn">＋ Save Debt</button>
         <button class="btn-outline" type="button" id="debtCancelEdit" style="display:none">Cancel Edit</button>
       </div>
     </form>
@@ -945,6 +1006,26 @@ input, select, textarea, button { max-width:100%; }
     <h2>Debt Accounts</h2>
     <div class="debt-tools"><input id="debtSearch" type="search" placeholder="Search name or note..."><select id="debtFilter"><option value="all">All status</option><option value="open">Unpaid</option><option value="partial">Partial</option><option value="settled">Paid</option></select></div>
     <div id="debtList"><div class="empty-message">No debt records yet. Add your first account above.</div></div>
+  </div>
+</div>
+
+
+<div id="debtPaymentModal" aria-hidden="true">
+  <div class="payment-dialog">
+    <h3>Record Debt Payment</h3>
+    <div id="debtPaymentBalance" style="font-weight:800;color:#c33c55;margin-bottom:8px"></div>
+    <form id="debtPaymentForm">
+      <label for="debtPaymentAmount">Payment amount (MMK) *</label>
+      <input id="debtPaymentAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Enter amount" required>
+      <label for="debtPaymentDate">Payment date *</label>
+      <input id="debtPaymentDate" type="date" required>
+      <label for="debtPaymentNote">Note (optional)</label>
+      <textarea id="debtPaymentNote" placeholder="Payment details"></textarea>
+      <div class="payment-modal-actions">
+        <button type="button" class="btn-outline" id="debtPaymentCancel">Cancel</button>
+        <button type="submit" class="btn-success">Save Payment</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1877,6 +1958,34 @@ const debtNoteInput = document.getElementById('debtNote');
 const debtListElement = document.getElementById('debtList');
 const debtSearchInput = document.getElementById('debtSearch');
 const debtFilterSelect = document.getElementById('debtFilter');
+const debtPaymentModal=document.getElementById('debtPaymentModal');
+const debtPaymentForm=document.getElementById('debtPaymentForm');
+let activeDebtPaymentId=null;
+function openDebtPayment(entry){
+  activeDebtPaymentId=entry.id;
+  const balance=Math.max(0,Number(entry.amount)-debtPaid(entry));
+  document.getElementById('debtPaymentBalance').textContent=`Outstanding balance: ${debtMoney(balance)}`;
+  document.getElementById('debtPaymentAmount').value='';
+  document.getElementById('debtPaymentAmount').max=String(balance);
+  document.getElementById('debtPaymentDate').value=debtToday();
+  document.getElementById('debtPaymentNote').value='';
+  debtPaymentModal.classList.add('active'); debtPaymentModal.setAttribute('aria-hidden','false');
+}
+function closeDebtPayment(){ debtPaymentModal.classList.remove('active'); debtPaymentModal.setAttribute('aria-hidden','true'); activeDebtPaymentId=null; }
+document.getElementById('debtPaymentCancel').addEventListener('click',closeDebtPayment);
+debtPaymentModal.addEventListener('click',e=>{ if(e.target===debtPaymentModal) closeDebtPayment(); });
+debtPaymentForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const entry=debtEntries.find(x=>x.id===activeDebtPaymentId); if(!entry){ showErrorPopup('Debt record could not be found.'); closeDebtPayment(); return; }
+  const balance=Math.max(0,Number(entry.amount)-debtPaid(entry));
+  const amount=Number(document.getElementById('debtPaymentAmount').value);
+  const date=document.getElementById('debtPaymentDate').value;
+  const note=document.getElementById('debtPaymentNote').value.trim();
+  if(!Number.isFinite(amount)||amount<=0||amount>balance||!date){ showErrorPopup('Enter a valid payment amount and date. Payment cannot exceed the outstanding balance.'); return; }
+  entry.payments=entry.payments||[]; entry.payments.push({amount,date,note,createdAt:new Date().toISOString()});
+  try { saveDebtEntries(); } catch(err) { showErrorPopup('Unable to save payment. Please check device storage.'); return; }
+  closeDebtPayment(); renderDebtList(); showSuccessPopup(amount===balance?'Debt fully paid. Payment saved.':'Partial payment saved. Remaining balance updated.');
+});
 const debtMoney = value => `${Math.round(Number(value)||0).toLocaleString('en-US')} MMK`;
 const debtToday = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 function saveDebtEntries(){ localStorage.setItem('cargoDebtEntries',JSON.stringify(debtEntries)); }
@@ -1914,50 +2023,28 @@ function renderDebtList(){
 }
 function resetDebtForm(){ editingDebtId=null; debtForm.reset(); debtDateInput.value=debtToday(); document.getElementById('debtFormTitle').textContent='Add Debt Record'; document.getElementById('debtSaveBtn').textContent='＋ Save Debt'; document.getElementById('debtCancelEdit').style.display='none'; }
 debtDateInput.value=debtToday();
-function handleDebtSave(e){
-  if(e){ e.preventDefault(); e.stopPropagation(); }
-  const name=debtNameInput.value.trim();
-  const amount=Number(debtAmountInput.value);
-  const date=debtDateInput.value;
-  if(!name || !Number.isFinite(amount) || amount<=0 || !date){
-    showErrorPopup('Please enter a name, valid amount and date.');
-    return false;
-  }
+function saveDebtRecord(){
+  const name=debtNameInput.value.trim(), amount=Number(debtAmountInput.value), date=debtDateInput.value;
+  if(!name || !Number.isFinite(amount) || amount<=0 || !date){ showErrorPopup('Please enter a name, valid amount and date.'); return; }
   const wasEditing=Boolean(editingDebtId);
   if(editingDebtId){
-    const entry=debtEntries.find(x=>x.id===editingDebtId);
-    if(!entry){ showErrorPopup('The debt record could not be found.'); return false; }
-    const alreadyPaid=debtPaid(entry);
-    if(amount<alreadyPaid){ showErrorPopup('Debt amount cannot be lower than payments already received.'); return false; }
+    const entry=debtEntries.find(x=>x.id===editingDebtId); if(!entry){ showErrorPopup('Debt record could not be found.'); return; }
+    const alreadyPaid=debtPaid(entry); if(amount<alreadyPaid){ showErrorPopup('Debt amount cannot be lower than payments already received.'); return; }
     entry.name=name; entry.amount=amount; entry.date=date; entry.note=debtNoteInput.value.trim();
   } else {
     debtEntries.push({id:`debt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name,amount,date,note:debtNoteInput.value.trim(),payments:[],createdAt:new Date().toISOString()});
   }
-  try {
-    saveDebtEntries();
-    resetDebtForm();
-    renderDebtList();
-    showSuccessPopup(wasEditing?'Debt record updated.':'Debt record saved.');
-    return true;
-  } catch(err) {
-    if(!wasEditing) debtEntries.pop();
-    showErrorPopup('Could not save to this device. Please check browser storage settings and try again.');
-    return false;
-  }
+  try { saveDebtEntries(); } catch(err) { showErrorPopup('Unable to save. Please check available device storage.'); return; }
+  resetDebtForm(); renderDebtList(); showSuccessPopup(wasEditing?'Debt record updated.':'Debt record saved.');
 }
-debtForm.addEventListener('submit',handleDebtSave);
-document.getElementById('debtSaveBtn').addEventListener('click',function(e){
-  e.preventDefault();
-  handleDebtSave(e);
-});
+document.getElementById('debtSaveBtn').addEventListener('click',saveDebtRecord);
+debtForm.addEventListener('submit',e=>{ e.preventDefault(); saveDebtRecord(); });
 document.getElementById('debtCancelEdit').addEventListener('click',resetDebtForm);
 debtSearchInput.addEventListener('input',renderDebtList); debtFilterSelect.addEventListener('change',renderDebtList);
 debtListElement.addEventListener('click',e=>{
   const btn=e.target.closest('button[data-action]'); if(!btn)return; const id=btn.dataset.id, action=btn.dataset.action, entry=debtEntries.find(x=>x.id===id); if(!entry)return;
   if(action==='pay'){
-    const balance=Math.max(0,Number(entry.amount)-debtPaid(entry)); const raw=prompt(`Outstanding: ${debtMoney(balance)}\nEnter payment received (MMK):`); if(raw===null)return; const amount=Number(raw);
-    if(!Number.isFinite(amount)||amount<=0||amount>balance){showErrorPopup('Enter a payment greater than 0 and not more than the outstanding balance.');return;}
-    const note=prompt('Payment note (optional):','')||''; entry.payments=entry.payments||[]; entry.payments.push({amount,date:debtToday(),note,createdAt:new Date().toISOString()}); saveDebtEntries(); renderDebtList(); showSuccessPopup('Payment recorded successfully.');
+    openDebtPayment(entry);
   } else if(action==='history'){
     const box=btn.closest('.debt-card').querySelector(`[data-history="${id}"]`); if(box.hidden){ const payments=entry.payments||[]; box.innerHTML=payments.length?`<strong>Payment History</strong>${payments.map(p=>`<div class="debt-history-row"><span>${p.date||''}${p.note?' · '+String(p.note).replace(/[&<>]/g,''):''}</span><strong>${debtMoney(p.amount)}</strong></div>`).join('')}`:'No payments recorded yet.'; box.hidden=false; } else box.hidden=true;
   } else if(action==='edit'){
