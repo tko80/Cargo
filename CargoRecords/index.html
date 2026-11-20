@@ -735,6 +735,45 @@ button:active { transform:scale(.98); }
 .debt-actions{display:flex;gap:7px;flex-wrap:wrap}.debt-actions button{flex:1;min-width:76px;padding:8px 9px;min-height:37px;font-size:.75rem}.debt-status{font-size:.68rem;font-weight:800;padding:5px 9px;border-radius:99px;white-space:nowrap}.debt-status.open{background:#fff0f2;color:#c43e56}.debt-status.partial{background:#fff6e5;color:#a66b12}.debt-status.settled{background:#e8faf3;color:#0c8b68}.debt-note{font-size:.8rem;color:#66758d;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}.debt-history{margin-top:10px;padding:10px 11px;border-radius:12px;background:#f7f9fd;font-size:.75rem;color:#5f6e85}.debt-history-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #e9eef6}.debt-history-row:last-child{border:0}
 @media(max-width:420px){.debt-form-grid{grid-template-columns:1fr}.debt-field.full{grid-column:auto}.debt-tools select{max-width:112px}.debt-amounts{gap:5px}.debt-amounts div{padding:8px 4px}}
 
+
+/* ===== Fixed mobile viewport: prevent sideways page drift and outer-page bounce ===== */
+html, body {
+  width:100%;
+  max-width:100%;
+  height:100%;
+  min-height:0;
+  overflow:hidden !important;
+  overscroll-behavior:none;
+  overscroll-behavior-x:none;
+}
+body {
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  touch-action:pan-y;
+}
+header { flex:0 0 auto; width:100%; min-width:0; }
+.container {
+  flex:1 1 auto;
+  min-height:0;
+  width:100%;
+  max-width:760px;
+  overflow-x:hidden !important;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+.tab-pane, .card, .record-item, .debt-card { max-width:100%; min-width:0; }
+img, video, canvas, iframe { max-width:100%; }
+input, select, textarea, button { max-width:100%; }
+@supports (height:100dvh) {
+  html, body { height:100dvh; }
+}
+
 </style>
 </head>
 <body>
