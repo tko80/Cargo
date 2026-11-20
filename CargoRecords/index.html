@@ -720,6 +720,21 @@ button:active { transform:scale(.98); }
 }
 @media (prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
 
+
+/* Dedicated debt ledger */
+.debt-hero{padding:18px;border-radius:19px;background:linear-gradient(135deg,#102d68,#2358c8 62%,#13a6c2);color:#fff;box-shadow:0 10px 24px rgba(25,73,164,.18);margin-bottom:14px}
+.debt-hero-label{font-size:.76rem;opacity:.82;font-weight:700;letter-spacing:.04em}
+.debt-total{font-size:1.85rem;font-weight:850;letter-spacing:-.04em;margin:3px 0 13px}
+.debt-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.debt-stat{padding:11px 12px;border-radius:13px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.15)}
+.debt-stat small{display:block;font-size:.68rem;opacity:.8}.debt-stat strong{display:block;font-size:1rem;margin-top:2px}
+.debt-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.debt-field{display:flex;flex-direction:column;gap:6px;min-width:0}.debt-field.full{grid-column:1/-1}.debt-field label{font-size:.76rem;color:#65738b;font-weight:750}.debt-field input,.debt-field textarea{width:100%;min-height:44px}.debt-field textarea{min-height:76px;resize:vertical}
+.debt-tools{display:flex;gap:8px;margin:12px 0}.debt-tools input{flex:1;min-width:0}.debt-tools select{max-width:125px}
+.debt-card{padding:15px;margin:10px 0;border:1px solid #e3eaf5;border-radius:17px;background:linear-gradient(145deg,#fff,#fbfcff);box-shadow:0 5px 15px rgba(29,53,97,.045)}
+.debt-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.debt-person{font-weight:850;color:#172e59;font-size:1rem;overflow-wrap:anywhere}.debt-date{font-size:.72rem;color:#8995a8;margin-top:3px}.debt-balance{font-weight:850;color:#c33c55;white-space:nowrap;font-size:.98rem}.debt-amounts{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.debt-amounts div{padding:9px 7px;border-radius:11px;background:#f3f6fc;text-align:center;min-width:0}.debt-amounts small{display:block;color:#8190a7;font-size:.65rem}.debt-amounts strong{font-size:.78rem;color:#263b60;overflow-wrap:anywhere}.debt-progress{height:7px;background:#edf1f8;border-radius:20px;overflow:hidden;margin:8px 0 11px}.debt-progress span{display:block;height:100%;background:linear-gradient(90deg,#18b88b,#42c6b0);border-radius:20px}
+.debt-actions{display:flex;gap:7px;flex-wrap:wrap}.debt-actions button{flex:1;min-width:76px;padding:8px 9px;min-height:37px;font-size:.75rem}.debt-status{font-size:.68rem;font-weight:800;padding:5px 9px;border-radius:99px;white-space:nowrap}.debt-status.open{background:#fff0f2;color:#c43e56}.debt-status.partial{background:#fff6e5;color:#a66b12}.debt-status.settled{background:#e8faf3;color:#0c8b68}.debt-note{font-size:.8rem;color:#66758d;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}.debt-history{margin-top:10px;padding:10px 11px;border-radius:12px;background:#f7f9fd;font-size:.75rem;color:#5f6e85}.debt-history-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #e9eef6}.debt-history-row:last-child{border:0}
+@media(max-width:420px){.debt-form-grid{grid-template-columns:1fr}.debt-field.full{grid-column:auto}.debt-tools select{max-width:112px}.debt-amounts{gap:5px}.debt-amounts div{padding:8px 4px}}
+
 </style>
 </head>
 <body>
@@ -860,6 +875,40 @@ button:active { transform:scale(.98); }
 </div>
 </div>
 
+<!-- Tab 4: Dedicated Debt Ledger -->
+<div class="tab-pane" id="tab-debts">
+  <div class="debt-hero">
+    <div class="debt-hero-label">TOTAL OUTSTANDING DEBT</div>
+    <div class="debt-total" id="debtOutstanding">0 MMK</div>
+    <div class="debt-stats">
+      <div class="debt-stat"><small>Total lent / owed</small><strong id="debtTotalAmount">0 MMK</strong></div>
+      <div class="debt-stat"><small>Total received</small><strong id="debtTotalPaid">0 MMK</strong></div>
+      <div class="debt-stat"><small>Open accounts</small><strong id="debtOpenCount">0</strong></div>
+      <div class="debt-stat"><small>Settled accounts</small><strong id="debtSettledCount">0</strong></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2 id="debtFormTitle">Add Debt Record</h2>
+    <form id="debtForm">
+      <div class="debt-form-grid">
+        <div class="debt-field full"><label for="debtName">Person / Customer name *</label><input id="debtName" type="text" placeholder="Enter name" required maxlength="80"></div>
+        <div class="debt-field"><label for="debtAmount">Debt amount (MMK) *</label><input id="debtAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="0" required></div>
+        <div class="debt-field"><label for="debtDate">Date *</label><input id="debtDate" type="date" required></div>
+        <div class="debt-field full"><label for="debtNote">Note (optional)</label><textarea id="debtNote" placeholder="Details, phone, reason..."></textarea></div>
+      </div>
+      <div class="save-section" style="display:flex;flex-direction:row;align-items:center">
+        <button class="btn-success" type="submit" id="debtSaveBtn">＋ Save Debt</button>
+        <button class="btn-outline" type="button" id="debtCancelEdit" style="display:none">Cancel Edit</button>
+      </div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Debt Accounts</h2>
+    <div class="debt-tools"><input id="debtSearch" type="search" placeholder="Search name or note..."><select id="debtFilter"><option value="all">All status</option><option value="open">Unpaid</option><option value="partial">Partial</option><option value="settled">Paid</option></select></div>
+    <div id="debtList"><div class="empty-message">No debt records yet. Add your first account above.</div></div>
+  </div>
+</div>
+
 <!-- Bottom Tab Navigation -->
 <div class="tab-navigation">
 <button class="tab-btn active" data-tab="tab-summary">
@@ -871,6 +920,7 @@ button:active { transform:scale(.98); }
 <button class="tab-btn" data-tab="tab-records">
 <span>Records</span>
 </button>
+<button class="tab-btn" data-tab="tab-debts"><span>Debt Ledger</span></button>
 </div>
 
 <script>
@@ -1777,11 +1827,85 @@ updateElement.remove();
 }, 5000);
 }
 
+// Dedicated Debt Ledger (independent from daily cargo records)
+let debtEntries = JSON.parse(localStorage.getItem('cargoDebtEntries') || '[]');
+let editingDebtId = null;
+const debtForm = document.getElementById('debtForm');
+const debtNameInput = document.getElementById('debtName');
+const debtAmountInput = document.getElementById('debtAmount');
+const debtDateInput = document.getElementById('debtDate');
+const debtNoteInput = document.getElementById('debtNote');
+const debtListElement = document.getElementById('debtList');
+const debtSearchInput = document.getElementById('debtSearch');
+const debtFilterSelect = document.getElementById('debtFilter');
+const debtMoney = value => `${Math.round(Number(value)||0).toLocaleString('en-US')} MMK`;
+const debtToday = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function saveDebtEntries(){ localStorage.setItem('cargoDebtEntries',JSON.stringify(debtEntries)); }
+function debtPaid(entry){ return (entry.payments||[]).reduce((sum,p)=>sum+(Number(p.amount)||0),0); }
+function debtStatus(entry){ const balance=Math.max(0,Number(entry.amount)-debtPaid(entry)); return balance<=0?'settled':debtPaid(entry)>0?'partial':'open'; }
+function updateDebtSummary(){
+  const total=debtEntries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const paid=debtEntries.reduce((s,e)=>s+debtPaid(e),0);
+  document.getElementById('debtOutstanding').textContent=debtMoney(Math.max(0,total-paid));
+  document.getElementById('debtTotalAmount').textContent=debtMoney(total);
+  document.getElementById('debtTotalPaid').textContent=debtMoney(paid);
+  document.getElementById('debtOpenCount').textContent=debtEntries.filter(e=>debtStatus(e)==='open'||debtStatus(e)==='partial').length;
+  document.getElementById('debtSettledCount').textContent=debtEntries.filter(e=>debtStatus(e)==='settled').length;
+}
+function renderDebtList(){
+  updateDebtSummary();
+  const q=(debtSearchInput.value||'').trim().toLowerCase(), filter=debtFilterSelect.value;
+  const list=debtEntries.filter(e=>`${e.name} ${e.note||''}`.toLowerCase().includes(q) && (filter==='all'||debtStatus(e)===filter)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  debtListElement.innerHTML='';
+  if(!list.length){ debtListElement.innerHTML='<div class="empty-message">No matching debt records found.</div>'; return; }
+  list.forEach(entry=>{
+    const paid=debtPaid(entry), balance=Math.max(0,Number(entry.amount)-paid), status=debtStatus(entry), pct=Math.min(100,Number(entry.amount)>0?paid/Number(entry.amount)*100:0);
+    const card=document.createElement('div'); card.className='debt-card';
+    const safeName=String(entry.name||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const safeNote=String(entry.note||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const statusText=status==='settled'?'PAID':status==='partial'?'PARTIAL':'UNPAID';
+    card.innerHTML=`<div class="debt-card-top"><div style="min-width:0"><div class="debt-person">${safeName}</div><div class="debt-date">Added ${entry.date||''}</div></div><span class="debt-status ${status}">${statusText}</span></div>
+      <div class="debt-amounts"><div><small>Debt</small><strong>${debtMoney(entry.amount)}</strong></div><div><small>Paid</small><strong>${debtMoney(paid)}</strong></div><div><small>Balance</small><strong>${debtMoney(balance)}</strong></div></div>
+      <div class="debt-progress"><span style="width:${pct}%"></span></div>
+      ${safeNote?`<div class="debt-note">${safeNote}</div>`:''}
+      <div class="debt-actions"><button class="btn-success" data-action="pay" data-id="${entry.id}" ${balance<=0?'disabled':''}>＋ Payment</button><button class="btn-outline" data-action="history" data-id="${entry.id}">History</button><button class="btn-outline" data-action="edit" data-id="${entry.id}">Edit</button><button class="btn-danger" data-action="delete" data-id="${entry.id}">Delete</button></div>
+      <div class="debt-history" data-history="${entry.id}" hidden></div>`;
+    debtListElement.appendChild(card);
+  });
+}
+function resetDebtForm(){ editingDebtId=null; debtForm.reset(); debtDateInput.value=debtToday(); document.getElementById('debtFormTitle').textContent='Add Debt Record'; document.getElementById('debtSaveBtn').textContent='＋ Save Debt'; document.getElementById('debtCancelEdit').style.display='none'; }
+debtDateInput.value=debtToday();
+debtForm.addEventListener('submit',e=>{
+  e.preventDefault(); const name=debtNameInput.value.trim(), amount=Number(debtAmountInput.value), date=debtDateInput.value;
+  if(!name||!Number.isFinite(amount)||amount<=0||!date){ showErrorPopup('Please enter a name, valid amount and date.'); return; }
+  const wasEditing=Boolean(editingDebtId);
+  if(editingDebtId){ const entry=debtEntries.find(x=>x.id===editingDebtId); if(!entry)return; const alreadyPaid=debtPaid(entry); if(amount<alreadyPaid){showErrorPopup('Debt amount cannot be lower than payments already received.');return;} entry.name=name; entry.amount=amount; entry.date=date; entry.note=debtNoteInput.value.trim(); }
+  else debtEntries.push({id:`debt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name,amount,date,note:debtNoteInput.value.trim(),payments:[],createdAt:new Date().toISOString()});
+  saveDebtEntries(); resetDebtForm(); renderDebtList(); showSuccessPopup(wasEditing?'Debt record updated.':'Debt record saved.');
+});
+document.getElementById('debtCancelEdit').addEventListener('click',resetDebtForm);
+debtSearchInput.addEventListener('input',renderDebtList); debtFilterSelect.addEventListener('change',renderDebtList);
+debtListElement.addEventListener('click',e=>{
+  const btn=e.target.closest('button[data-action]'); if(!btn)return; const id=btn.dataset.id, action=btn.dataset.action, entry=debtEntries.find(x=>x.id===id); if(!entry)return;
+  if(action==='pay'){
+    const balance=Math.max(0,Number(entry.amount)-debtPaid(entry)); const raw=prompt(`Outstanding: ${debtMoney(balance)}\nEnter payment received (MMK):`); if(raw===null)return; const amount=Number(raw);
+    if(!Number.isFinite(amount)||amount<=0||amount>balance){showErrorPopup('Enter a payment greater than 0 and not more than the outstanding balance.');return;}
+    const note=prompt('Payment note (optional):','')||''; entry.payments=entry.payments||[]; entry.payments.push({amount,date:debtToday(),note,createdAt:new Date().toISOString()}); saveDebtEntries(); renderDebtList(); showSuccessPopup('Payment recorded successfully.');
+  } else if(action==='history'){
+    const box=btn.closest('.debt-card').querySelector(`[data-history="${id}"]`); if(box.hidden){ const payments=entry.payments||[]; box.innerHTML=payments.length?`<strong>Payment History</strong>${payments.map(p=>`<div class="debt-history-row"><span>${p.date||''}${p.note?' · '+String(p.note).replace(/[&<>]/g,''):''}</span><strong>${debtMoney(p.amount)}</strong></div>`).join('')}`:'No payments recorded yet.'; box.hidden=false; } else box.hidden=true;
+  } else if(action==='edit'){
+    editingDebtId=id; debtNameInput.value=entry.name; debtAmountInput.value=entry.amount; debtDateInput.value=entry.date; debtNoteInput.value=entry.note||''; document.getElementById('debtFormTitle').textContent='Edit Debt Record'; document.getElementById('debtSaveBtn').textContent='Save Changes'; document.getElementById('debtCancelEdit').style.display=''; document.getElementById('debtFormTitle').scrollIntoView({behavior:'smooth',block:'center'});
+  } else if(action==='delete'){
+    showDeletePopup(`Delete debt record for "${entry.name}" including its payment history?`,()=>{debtEntries=debtEntries.filter(x=>x.id!==id);saveDebtEntries();renderDebtList();if(editingDebtId===id)resetDebtForm();});
+  }
+});
+renderDebtList();
+
 // Backup / Restore
 document.getElementById('backupBtn').addEventListener('click', function() {
   const backupData = {};
-  ['merchants', 'allItems', 'merchantItems', 'paidMerchants', 'records'].forEach(key => {
-    backupData[key] = JSON.parse(localStorage.getItem(key) || (key === 'merchants' || key === 'allItems' ? '[]' : '{}'));
+  ['merchants', 'allItems', 'merchantItems', 'paidMerchants', 'records', 'cargoDebtEntries'].forEach(key => {
+    backupData[key] = JSON.parse(localStorage.getItem(key) || (key === 'merchants' || key === 'allItems' || key === 'cargoDebtEntries' ? '[]' : '{}'));
   });
   backupData.app = 'Cargo Records';
   backupData.backupDate = new Date().toISOString();
@@ -1808,6 +1932,7 @@ document.getElementById('restoreFileInput').addEventListener('change', function(
       }
       if (!confirm('Restore this backup? Current app data will be replaced.')) return;
       required.forEach(key => localStorage.setItem(key, JSON.stringify(data[key])));
+      if (Array.isArray(data.cargoDebtEntries)) { debtEntries = data.cargoDebtEntries; saveDebtEntries(); renderDebtList(); }
       merchants = data.merchants || [];
       allItems = data.allItems || [];
       merchantItems = data.merchantItems || {};
