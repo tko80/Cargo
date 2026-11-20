@@ -774,37 +774,6 @@ input, select, textarea, button { max-width:100%; }
   html, body { height:100dvh; }
 }
 
-
-
-/* iPhone viewport and bottom navigation reliability */
-html, body { height:100%; height:100dvh; width:100%; overflow:hidden!important; }
-body { position:fixed; inset:0; display:flex; flex-direction:column; min-height:0; }
-header { flex:0 0 auto; }
-.container {
-  flex:1 1 0; min-height:0; height:auto; max-height:none;
-  overflow-x:hidden!important; overflow-y:auto!important;
-  -webkit-overflow-scrolling:touch;
-  padding-bottom:calc(118px + env(safe-area-inset-bottom))!important;
-}
-.tab-content { padding-bottom:12px; margin-bottom:0!important; }
-.tab-navigation {
-  position:fixed!important; display:flex!important; visibility:visible!important;
-  left:0!important; right:0!important; bottom:0!important; width:100%!important;
-  min-height:64px; height:auto; z-index:9999!important;
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;
-  gap:4px!important; transform:none!important;
-  background:rgba(255,255,255,.97)!important;
-}
-.tab-btn { flex:1 1 0; min-width:0; white-space:normal; line-height:1.15; font-size:clamp(.58rem,2.5vw,.72rem); padding:7px 2px!important; }
-.save-section { width:100%; }
-.save-section .payment-buttons { min-width:0; }
-.save-section .payment-buttons button { min-width:0; }
-button:disabled { opacity:.55; }
-@media(max-width:380px) {
-  .tab-btn { font-size:.56rem; }
-  .tab-navigation { gap:2px!important; padding-left:4px!important; padding-right:4px!important; }
-}
-
 </style>
 </head>
 <body>
@@ -959,7 +928,6 @@ button:disabled { opacity:.55; }
   </div>
   <div class="card">
     <h2 id="debtFormTitle">Add Debt Record</h2>
-    <p class="backup-help">This ledger is separate from daily Cargo Records and their Paid / Unpaid status.</p>
     <form id="debtForm">
       <div class="debt-form-grid">
         <div class="debt-field full"><label for="debtName">Person / Customer name *</label><input id="debtName" type="text" placeholder="Enter name" required maxlength="80"></div>
@@ -1051,8 +1019,6 @@ document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('ac
 this.classList.add('active');
 const tabId = this.getAttribute('data-tab');
 document.getElementById(tabId).classList.add('active');
-const scrollArea = document.querySelector('.container');
-if (scrollArea) scrollArea.scrollTo({top: 0, behavior: 'auto'});
 });
 });
 
@@ -1485,54 +1451,130 @@ const markUnpaidBtn = document.getElementById('markUnpaidBtn');
 
 // Record payment status update function
 function updateRecordPaymentStatus(date, merchantName, isPaid) {
-  if (!date || !merchantName) return false;
-  if (!records[date]) records[date] = [];
-  let record = records[date].find(r => r.merchant === merchantName);
-  if (!record) {
-    const items = (merchantItems[date] && merchantItems[date][merchantName])
-      ? merchantItems[date][merchantName] : [];
-    record = { merchant: merchantName, items: items, paid: !!isPaid, timestamp: new Date().toISOString() };
-    records[date].push(record);
-  } else {
-    record.paid = !!isPaid;
-    record.timestamp = new Date().toISOString();
-    if ((!record.items || !record.items.length) && merchantItems[date] && merchantItems[date][merchantName]) {
-      record.items = merchantItems[date][merchantName];
+
+  if (!records[date]) return;
+
+  records[date].forEach(record => {
+
+    if (record.merchant === merchantName) {
+      record.paid = isPaid;
+      record.timestamp = new Date().toISOString();
     }
-  }
+
+  });
+
   localStorage.setItem('records', JSON.stringify(records));
+
+  // Records tab refresh
   loadRecordsForDate(date);
-  return true;
 }
 
-// Reliable payment status controls (persist status even before a record exists)
-function setMerchantPaymentStatus(isPaid) {
+// Mark as paid
+markPaidBtn.addEventListener('click', function () {
+
   if (!selectedMerchant) {
     showErrorPopup('Please select a name first.');
     return;
   }
-  const date = datePickerElement.value;
-  if (!date) {
-    showErrorPopup('Please select a valid date first.');
+
+  const currentDate = datePickerElement.value;
+
+  // Create array if not exist
+  if (!paidMerchants[currentDate]) {
+    paidMerchants[currentDate] = [];
+  }
+
+  // Add paid merchant
+  if (!paidMerchants[currentDate].includes(selectedMerchant)) {
+
+    paidMerchants[currentDate].push(selectedMerchant);
+
+    // Save paid merchants
+    localStorage.setItem(
+      'paidMerchants',
+      JSON.stringify(paidMerchants)
+    );
+
+    // Update records
+    updateRecordPaymentStatus(
+      currentDate,
+      selectedMerchant,
+      true
+    );
+
+    // Refresh UI
+    updatePaymentStatus();
+    renderPaymentList();
+    updateSummary();
+
+    // Success popup
+    showSuccessPopup(
+      `"${selectedMerchant}" marked as paid.`
+    );
+
+    // Realtime update
+    showRealTimeUpdate(
+      `"${selectedMerchant}" payment status changed to paid.`
+    );
+  }
+});
+
+// Mark as unpaid
+markUnpaidBtn.addEventListener('click', function () {
+
+  if (!selectedMerchant) {
+    showErrorPopup('Please select a name first.');
     return;
   }
-  if (isPaid) {
-    if (!paidMerchants[date]) paidMerchants[date] = [];
-    if (!paidMerchants[date].includes(selectedMerchant)) paidMerchants[date].push(selectedMerchant);
-  } else if (paidMerchants[date]) {
-    paidMerchants[date] = paidMerchants[date].filter(name => name !== selectedMerchant);
-    if (!paidMerchants[date].length) delete paidMerchants[date];
+
+  const currentDate = datePickerElement.value;
+
+  // Check merchant exists in paid list
+  if (
+    paidMerchants[currentDate] &&
+    paidMerchants[currentDate].includes(selectedMerchant)
+  ) {
+
+    // Remove merchant
+    paidMerchants[currentDate] =
+      paidMerchants[currentDate].filter(
+        merchant => merchant !== selectedMerchant
+      );
+
+    // Remove empty array
+    if (paidMerchants[currentDate].length === 0) {
+      delete paidMerchants[currentDate];
+    }
+
+    // Save
+    localStorage.setItem(
+      'paidMerchants',
+      JSON.stringify(paidMerchants)
+    );
+
+    // Update records
+    updateRecordPaymentStatus(
+      currentDate,
+      selectedMerchant,
+      false
+    );
+
+    // Refresh UI
+    updatePaymentStatus();
+    renderPaymentList();
+    updateSummary();
+
+    // Success popup
+    showSuccessPopup(
+      `"${selectedMerchant}" marked as unpaid.`
+    );
+
+    // Realtime update
+    showRealTimeUpdate(
+      `"${selectedMerchant}" payment status changed to unpaid.`
+    );
   }
-  localStorage.setItem('paidMerchants', JSON.stringify(paidMerchants));
-  updateRecordPaymentStatus(date, selectedMerchant, isPaid);
-  updatePaymentStatus();
-  renderPaymentList();
-  updateSummary();
-  showSuccessPopup(`"${selectedMerchant}" marked as ${isPaid ? 'paid' : 'unpaid'}.`);
-  showRealTimeUpdate(`"${selectedMerchant}" payment status changed to ${isPaid ? 'paid' : 'unpaid'}.`);
-}
-markPaidBtn.addEventListener('click', () => setMerchantPaymentStatus(true));
-markUnpaidBtn.addEventListener('click', () => setMerchantPaymentStatus(false));
+});
 
 // Render payment list
 function renderPaymentList() {
@@ -1872,13 +1914,41 @@ function renderDebtList(){
 }
 function resetDebtForm(){ editingDebtId=null; debtForm.reset(); debtDateInput.value=debtToday(); document.getElementById('debtFormTitle').textContent='Add Debt Record'; document.getElementById('debtSaveBtn').textContent='＋ Save Debt'; document.getElementById('debtCancelEdit').style.display='none'; }
 debtDateInput.value=debtToday();
-debtForm.addEventListener('submit',e=>{
-  e.preventDefault(); const name=debtNameInput.value.trim(), amount=Number(debtAmountInput.value), date=debtDateInput.value;
-  if(!name||!Number.isFinite(amount)||amount<=0||!date){ showErrorPopup('Please enter a name, valid amount and date.'); return; }
+function handleDebtSave(e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  const name=debtNameInput.value.trim();
+  const amount=Number(debtAmountInput.value);
+  const date=debtDateInput.value;
+  if(!name || !Number.isFinite(amount) || amount<=0 || !date){
+    showErrorPopup('Please enter a name, valid amount and date.');
+    return false;
+  }
   const wasEditing=Boolean(editingDebtId);
-  if(editingDebtId){ const entry=debtEntries.find(x=>x.id===editingDebtId); if(!entry)return; const alreadyPaid=debtPaid(entry); if(amount<alreadyPaid){showErrorPopup('Debt amount cannot be lower than payments already received.');return;} entry.name=name; entry.amount=amount; entry.date=date; entry.note=debtNoteInput.value.trim(); }
-  else debtEntries.push({id:`debt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name,amount,date,note:debtNoteInput.value.trim(),payments:[],createdAt:new Date().toISOString()});
-  saveDebtEntries(); resetDebtForm(); renderDebtList(); showSuccessPopup(wasEditing?'Debt record updated.':'Debt record saved.');
+  if(editingDebtId){
+    const entry=debtEntries.find(x=>x.id===editingDebtId);
+    if(!entry){ showErrorPopup('The debt record could not be found.'); return false; }
+    const alreadyPaid=debtPaid(entry);
+    if(amount<alreadyPaid){ showErrorPopup('Debt amount cannot be lower than payments already received.'); return false; }
+    entry.name=name; entry.amount=amount; entry.date=date; entry.note=debtNoteInput.value.trim();
+  } else {
+    debtEntries.push({id:`debt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name,amount,date,note:debtNoteInput.value.trim(),payments:[],createdAt:new Date().toISOString()});
+  }
+  try {
+    saveDebtEntries();
+    resetDebtForm();
+    renderDebtList();
+    showSuccessPopup(wasEditing?'Debt record updated.':'Debt record saved.');
+    return true;
+  } catch(err) {
+    if(!wasEditing) debtEntries.pop();
+    showErrorPopup('Could not save to this device. Please check browser storage settings and try again.');
+    return false;
+  }
+}
+debtForm.addEventListener('submit',handleDebtSave);
+document.getElementById('debtSaveBtn').addEventListener('click',function(e){
+  e.preventDefault();
+  handleDebtSave(e);
 });
 document.getElementById('debtCancelEdit').addEventListener('click',resetDebtForm);
 debtSearchInput.addEventListener('input',renderDebtList); debtFilterSelect.addEventListener('change',renderDebtList);
@@ -1889,7 +1959,7 @@ debtListElement.addEventListener('click',e=>{
     if(!Number.isFinite(amount)||amount<=0||amount>balance){showErrorPopup('Enter a payment greater than 0 and not more than the outstanding balance.');return;}
     const note=prompt('Payment note (optional):','')||''; entry.payments=entry.payments||[]; entry.payments.push({amount,date:debtToday(),note,createdAt:new Date().toISOString()}); saveDebtEntries(); renderDebtList(); showSuccessPopup('Payment recorded successfully.');
   } else if(action==='history'){
-    const box=btn.closest('.debt-card').querySelector(`[data-history="${id}"]`); if(box.hidden){ const payments=entry.payments||[]; box.innerHTML=payments.length?`<strong>Payment History</strong>${payments.map(p=>`<div class="debt-history-row"><span>${p.date||''}${p.note?' · '+String(p.note).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):''}</span><strong>${debtMoney(p.amount)}</strong></div>`).join('')}`:'No payments recorded yet.'; box.hidden=false; } else box.hidden=true;
+    const box=btn.closest('.debt-card').querySelector(`[data-history="${id}"]`); if(box.hidden){ const payments=entry.payments||[]; box.innerHTML=payments.length?`<strong>Payment History</strong>${payments.map(p=>`<div class="debt-history-row"><span>${p.date||''}${p.note?' · '+String(p.note).replace(/[&<>]/g,''):''}</span><strong>${debtMoney(p.amount)}</strong></div>`).join('')}`:'No payments recorded yet.'; box.hidden=false; } else box.hidden=true;
   } else if(action==='edit'){
     editingDebtId=id; debtNameInput.value=entry.name; debtAmountInput.value=entry.amount; debtDateInput.value=entry.date; debtNoteInput.value=entry.note||''; document.getElementById('debtFormTitle').textContent='Edit Debt Record'; document.getElementById('debtSaveBtn').textContent='Save Changes'; document.getElementById('debtCancelEdit').style.display=''; document.getElementById('debtFormTitle').scrollIntoView({behavior:'smooth',block:'center'});
   } else if(action==='delete'){
